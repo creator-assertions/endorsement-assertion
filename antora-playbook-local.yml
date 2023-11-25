@@ -1,0 +1,14 @@
+# Use this playbook when building locally.
+
+site:
+  title: Endorsement Assertion
+  start_page: endorsement::index.adoc
+content:
+  sources: 
+  - url: .
+    branches: HEAD
+    start_path: docs
+ui: 
+  bundle:
+    url: https://local--voluble-treacle-74ce0d.netlify.app/ui-bundle.zip
+    snapshot: true
