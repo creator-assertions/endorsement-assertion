@@ -1,0 +1,7 @@
+{
+  "endorseeCredential": {
+    1: 'A DER-encoded SubjectPublicKeyInfo containing the public key of the signer to be endorsed'
+  },
+  "notValidBefore": 0("2021-03-21T20:04:00Z"),
+  "notValidAfter": 0("2022-03-21T20:04:00Z")
+}

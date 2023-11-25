@@ -19,3 +19,72 @@ include::partial$license.adoc[]
 :sectnums:
 
 == Introduction
+
+An endorsement is a way of indicating approval for specific actions made on content after it has had a manifest attached (see <<_endorsement>>). The endorsement assertion is where an endorsement from the signer of an ingredient asset is stored. These endorsements are typically provided (out-of-band of this specification) by ingredient asset signers to actors those signers trust to perform the actions listed in <<_endorsement>>. They are used by a validator when assessing whether the actions of the active manifest are "endorsed" or not (see xref:_validate_the_endorsements[endorsement validation]).
+
+To attach an endorsement, a claim generator must ensure that:
+
+- only the actions listed in the <<_endorsement>> section are present in the actions assertion
+- exactly one ingredient assertion is present in the assertion store, and,
+- that ingredient is the one referenced by the actions assertion's `parameters.ingredient` field
+
+An endorsement assertion shall have a label of `c2pa.endorsement`, and there shall be at most one endorsement assertion per manifest. The assertion contents shall be a `COSE_Sign1_Tagged` structure that is created as defined in <<_endorsement_generation>>.
+
+== Endorsement
+
+Endorsements are a way of indicating approval of three possible actions, `c2pa.published`, `c2pa.transcoded` and `c2pa.repackaged`, that could be applied to an asset in a C2PA manifest in which the asset is used as an ingredient.
+
+For example, the signer of a C2PA Manifest may want to endorse another party who wishes to transcode its asset. The signer creates an endorsement that identifies the transcoder, and conveys the endorsement to them (in some method that is out-of-band from this specification). When the transcoder creates their asset containing the ingredient, they include the endorsement as a `c2pa.endorsement` assertion, which lets the manifest consumer know that the actions they performed have been endorsed.
+
+Endorsements are made by signers, and describe the actor they are endorsing through the use of their signing credentials and a validity period. These endorsements are conveyed out-of-band from the endorser to the endorsee. When the endorsee is using an asset created by the endorser as an ingredient in their own asset, they shall include the endorsement in its C2PA Manifest.
+
+Endorsements endorse the specific actions (described in <<_validate_the_endorsements>>) that may be taken by the endorsee, and are therefore valid for asset manifests that use only the specified actions. Actions are only endorsed by the signer of that action's referenced ingredient; they cannot be endorsed across more than multiple C2PA Manifests in the asset's provenance.
+
+=== Endorsement generation
+
+Endorsements are COSE objects (see <<_digital_signatures>>), where the COSE payload is an "endorsement target" data structure encoded as CBOR, as shown below. The `endorseeCredential` field is an object with a single field, labelled according to the type of credential used to sign the endorsement. The label of this field indicates to validators the type of the credential present, so that they know how to decode, parse and validate the credential correctly. The following table details the format of each of the currently specified credential types:
+
+==== Endorsement credential types
+
+[col="2,1,4,4"]
+|===
+|Credential name |CBOR label |Value type |Compares To
+
+|Reserved
+|0
+|
+|
+
+|X.509 SubjectPublicKeyInfo
+|1
+|A https://datatracker.ietf.org/doc/html/rfc5280#section-4.1[DER-encoded ASN.1 SubjectPublicKeyInfo] structure (as a CBOR `bstr`), from the _endorsee's_ X.509 certificate that will be used for signing the claims of assets that this endorsement is expected to be used with.
+|The value of the credential shall be compared (bitwise identical) to the SubjectPublicKeyInfo structure of the certificate located in the `x5chain` or `33` (integer) COSE header of the active manifest Claim Signature (see <<x509_certificates>>)
+|===
+
+Endorsers shall place the credential of the signer they are endorsing and its type in the `endorseeCredential`. To limit the length of time that an endorser is lending their endorsement to another signer, the `notValidBefore` and `notValidAfter` fields contain ISO 8601 date times.
+
+The schema for the endorsement target type is defined by the `endorsement-target-map` rule in the following https://datatracker.ietf.org/doc/html/rfc8610[CDDL Definition]:
+
+[source,cddl]
+----
+include::../partials/schemas/cddl/endorsement-target.cddl[]
+----
+
+An example endorsement target is shown below:
+
+[source,json]
+----
+include::../partials/schemas/cddl/examples/endorsement-target.cbordiag[]
+----
+
+To sign an endorsement, follow the procedure specified in <<_digital_signatures>>, using the serialised CBOR `endorsement-target` object as the contents of the payload field. A signer shall not include a `x5chain` header and value, as endorsements are validated in the context of their use as an ingredient, and therefore use the signing credential of that ingredient manifest (see xref:_validate_the_endorsements[Endorsement Validation]). The serialized `COSE_Sign1_Tagged` structure resulting from the digital signature procedure is the endorsement that may be conveyed to the signer identified in the `endorsement-target`, but the process for conveying it is out of scope of this specification.
+
+=== Endorsement storage
+
+If the active manifest signer possesses an endorsement that it wishes to use to endorse an action performed by an actor, it can choose to embed the endorsement in the manifest it is generating. The procedure for the validation of such endorsements is covered in <<_validate_the_endorsements>>. An endorsement is added as an <<_endorsement>> in the active manifest's assertion store.
+
+== Validation
+
+NOTE: TO DO: Incorporate the following from C2PA 1.3 spec:
+
+> There is no requirement that signers of ingredient manifests are trusted by the validator (except in the case of xref:_validate_the_endorsements[endorsement validation]), and building of trust chains of signers of ingredients shall not be attempted. Instead, as the ingredient is included by the signer of the active manifest, and if the signer of the active manifest is accepted per the rules above, ingredient manifests will inherit that trust for the purposes of this recursive validation. Applications should not display data from ingredient manifests with failed integrity checks. If the application chooses to display such data, it must flag the display with a warning about the failed integrity check, and that the data cannot be reliably attributed to the ingredient manifest's signer nor to the asset's manifest's signer. Applications and data must not display data from ingredient manifests without first attempting validation.
