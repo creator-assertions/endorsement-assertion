@@ -5,4 +5,4 @@ _This section is non-normative._
 
 *28 February 2024*
 
-* Prepare 0.1-draft version, derived from final description of link:https://c2pa.org/specifications/specifications/1.4/specs/C2PA_Specification.html#_endorsement_2[endorsement assertion in C2PA 1.4 Technical Specification].
+* Prepare 1.0-draft version, derived from final description of link:https://c2pa.org/specifications/specifications/1.4/specs/C2PA_Specification.html#_endorsement_2[endorsement assertion in C2PA 1.4 Technical Specification].
