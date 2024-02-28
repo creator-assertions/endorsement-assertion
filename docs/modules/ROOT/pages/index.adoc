@@ -2,47 +2,75 @@
 :toc: macro
 :toc-title:
 :sectanchors:
-:sectnums!:
+:sectnums:
 
-Introductory text to follow
+An endorsement is a way of indicating approval for specific actions made on content after it has had a link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_manifests++[C2PA Manifest] attached. (See xref:_generating_an_endorsement[xrefstyle=full].) The *endorsement assertion* is where an endorsement from the signer of an ingredient asset is stored. These endorsements are typically provided (out-of-band of this specification) by ingredient asset signers to actors those signers trust to perform the actions listed in the assertion. They are used by a validator when assessing whether the actions of the active manifest are “endorsed” or not. (See xref:_validation[xrefstyle=full].)
 
-*Preliminary draft 24 November 2023*
+Version 1.0 *Pre-draft 28 February 2024* · xref:_version_history[]
 
-*Editors:*
+[#maintainers]
+*Maintainers:*
 
 * mailto:scouten@adobe.com[Eric Scouten] (https://adobe.com[Adobe])
 
-include::partial$toc.adoc[]
-include::partial$status.adoc[]
 include::partial$license.adoc[]
-
-:sectnums:
+include::partial$contributing.adoc[]
+include::partial$foreword.adoc[]
+include::partial$toc.adoc[]
 
 == Introduction
 
-An endorsement is a way of indicating approval for specific actions made on content after it has had a manifest attached (see <<_endorsement>>). The endorsement assertion is where an endorsement from the signer of an ingredient asset is stored. These endorsements are typically provided (out-of-band of this specification) by ingredient asset signers to actors those signers trust to perform the actions listed in <<_endorsement>>. They are used by a validator when assessing whether the actions of the active manifest are "endorsed" or not (see xref:_validate_the_endorsements[endorsement validation]).
+_This section is non-normative._
 
-To attach an endorsement, a claim generator must ensure that:
+=== Scope
 
-- only the actions listed in the <<_endorsement>> section are present in the actions assertion
-- exactly one ingredient assertion is present in the assertion store, and,
-- that ingredient is the one referenced by the actions assertion's `parameters.ingredient` field
+IMPORTANT: For purposes of the Community Specification License, the link:https://github.com/creator-assertions/endorsement-assertion/blob/main/scope.md[`scope.md` document] at the root of this project’s GitHub repository is the governing document of this specification’s scope.
 
-An endorsement assertion shall have a label of `c2pa.endorsement`, and there shall be at most one endorsement assertion per manifest. The assertion contents shall be a `COSE_Sign1_Tagged` structure that is created as defined in <<_endorsement_generation>>.
+=== Overview
 
-== Endorsement
+Endorsements are a way of indicating approval of three possible actions (see xref:_permitted_actions[xrefstyle=full]) that could be applied to an asset in a link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_manifests++[C2PA Manifest] in which the asset is used as an ingredient.
 
-Endorsements are a way of indicating approval of three possible actions, `c2pa.published`, `c2pa.transcoded` and `c2pa.repackaged`, that could be applied to an asset in a C2PA manifest in which the asset is used as an ingredient.
+For example, the signer of a link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_manifests++[C2PA Manifest] may want to endorse another party who wishes to transcode its asset. The signer creates an endorsement that identifies the transcoder, and conveys the endorsement to them (in some method that is out-of-band from this specification). When the transcoder creates their asset containing the ingredient, they include the endorsement as an *endorsement assertion,* which lets the manifest consumer know that the actions they performed have been endorsed.
 
-For example, the signer of a C2PA Manifest may want to endorse another party who wishes to transcode its asset. The signer creates an endorsement that identifies the transcoder, and conveys the endorsement to them (in some method that is out-of-band from this specification). When the transcoder creates their asset containing the ingredient, they include the endorsement as a `c2pa.endorsement` assertion, which lets the manifest consumer know that the actions they performed have been endorsed.
+Endorsements are made by signers, and describe the actor they are endorsing through the use of their signing credentials and a validity period. These endorsements are conveyed out-of-band from the endorser to the endorsee. When the endorsee is using an asset created by the endorser as an ingredient in their own asset, they shall include the endorsement in its link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_manifests++[C2PA Manifest].
 
-Endorsements are made by signers, and describe the actor they are endorsing through the use of their signing credentials and a validity period. These endorsements are conveyed out-of-band from the endorser to the endorsee. When the endorsee is using an asset created by the endorser as an ingredient in their own asset, they shall include the endorsement in its C2PA Manifest.
+Endorsements endorse the specific actions (described in xref:_permitted_actions[xrefstyle=full]) that may be taken by the endorsee, and are therefore valid for asset manifests that use only the specified actions. Actions are only endorsed by the signer of that action’s referenced ingredient; they cannot be endorsed across more than multiple link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_manifests++[C2PA Manifests] in the asset’s provenance.
 
-Endorsements endorse the specific actions (described in <<_validate_the_endorsements>>) that may be taken by the endorsee, and are therefore valid for asset manifests that use only the specified actions. Actions are only endorsed by the signer of that action's referenced ingredient; they cannot be endorsed across more than multiple C2PA Manifests in the asset's provenance.
+== Normative references
 
-=== Endorsement generation
+* https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html[C2PA technical specification, version 2.0]
+* https://tools.ietf.org/html/rfc5280[Internet X.509 public key infrastructure certificate] (RFC 5280)
 
-Endorsements are COSE objects (see <<_digital_signatures>>), where the COSE payload is an "endorsement target" data structure encoded as CBOR, as shown below. The `endorseeCredential` field is an object with a single field, labelled according to the type of credential used to sign the endorsement. The label of this field indicates to validators the type of the credential present, so that they know how to decode, parse and validate the credential correctly. The following table details the format of each of the currently specified credential types:
+== Generating an endorsement
+
+=== Endorsement storage
+
+If the active manifest signer possesses an endorsement that it wishes to use to endorse an action performed by an actor, it can choose to embed the endorsement in the manifest it is generating. An endorsement is added as an *endorsement assertion* in the active manifest’s assertion store.
+
+Before generating an *endorsement action,* the claim generator MUST ensure that:
+
+* exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[`c2pa.actions` assertion] exists in the manifest,
+* only the actions listed under xref:_permitted_actions[xrefstyle=full] are present in the actions assertion,
+* exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_ingredient++[ingredient assertion] is present in the assertion store, and,
+* that ingredient is the one referenced by the actions assertion’s `parameters.ingredient` field.
+
+The *endorsement assertion* MUST have a label of `cawg.endorsement` and there SHALL be at most one *endorsement assertion* per manifest. The assertion contents MUST be a `COSE_Sign1_Tagged` structure that is created as defined in xref:_cose_payload_details[xrefstyle=full].
+
+IMPORTANT: C2PA 1.4 description of endorsement assertion was unclear as to whether there could be one or more than one endorsement assertion per claim. Resolve.
+
+=== Permitted actions
+
+The link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[`c2pa.actions` assertion] in a C2PA Manifest containing an *endorsement assertion* MAY contain any of the following action codes:
+
+* `c2pa.published`
+* `c2pa.transcoded`
+* `c2pa.repackaged`
+
+The actions assertion MUST NOT contain any other action codes.
+
+=== COSE payload details
+
+Endorsements are COSE objects (see link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_digital_signatures++[Section 13.2, “Digital Signatures,” of the C2PA 2.0 Technical Specification]), where the COSE payload is an “endorsement target” data structure encoded as CBOR, as shown below. The `endorseeCredential` field is an object with a single field, labelled according to the type of credential used to sign the endorsement. The label of this field indicates to validators the type of the credential present, so that they know how to decode, parse and validate the credential correctly. The following table details the format of each of the currently specified credential types:
 
 ==== Endorsement credential types
 
@@ -57,34 +85,53 @@ Endorsements are COSE objects (see <<_digital_signatures>>), where the COSE payl
 
 |X.509 SubjectPublicKeyInfo
 |1
-|A https://datatracker.ietf.org/doc/html/rfc5280#section-4.1[DER-encoded ASN.1 SubjectPublicKeyInfo] structure (as a CBOR `bstr`), from the _endorsee's_ X.509 certificate that will be used for signing the claims of assets that this endorsement is expected to be used with.
-|The value of the credential shall be compared (bitwise identical) to the SubjectPublicKeyInfo structure of the certificate located in the `x5chain` or `33` (integer) COSE header of the active manifest Claim Signature (see <<x509_certificates>>)
+|A https://datatracker.ietf.org/doc/html/rfc5280#section-4.1[DER-encoded ASN.1 SubjectPublicKeyInfo] structure (as a CBOR `bstr`), from the _endorsee’s_ X.509 certificate that will be used for signing the claims of assets that this endorsement is expected to be used with.
+|The value of the credential shall be compared (bitwise identical) to the SubjectPublicKeyInfo structure of the certificate located in the `x5chain` or `33` (integer) COSE header of the active manifest Claim Signature. (See link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#x509_certificates++[Section 14.6, “X.509 Certificates,” of the C2PA 2.0 Technical Specification].)
 |===
 
-Endorsers shall place the credential of the signer they are endorsing and its type in the `endorseeCredential`. To limit the length of time that an endorser is lending their endorsement to another signer, the `notValidBefore` and `notValidAfter` fields contain ISO 8601 date times.
+Endorsers SHALL place the credential of the signer they are endorsing and its type in the `endorseeCredential`. To limit the length of time that an endorser is lending their endorsement to another signer, the `notValidBefore` and `notValidAfter` fields contain ISO 8601 date times.
 
 The schema for the endorsement target type is defined by the `endorsement-target-map` rule in the following https://datatracker.ietf.org/doc/html/rfc8610[CDDL Definition]:
 
 [source,cddl]
 ----
-include::../partials/schemas/cddl/endorsement-target.cddl[]
+include::partial$schemas/cddl/endorsement-target.cddl[]
 ----
 
 An example endorsement target is shown below:
 
 [source,json]
 ----
-include::../partials/schemas/cddl/examples/endorsement-target.cbordiag[]
+include::partial$schemas/cddl/examples/endorsement-target.cbordiag[]
 ----
 
-To sign an endorsement, follow the procedure specified in <<_digital_signatures>>, using the serialised CBOR `endorsement-target` object as the contents of the payload field. A signer shall not include a `x5chain` header and value, as endorsements are validated in the context of their use as an ingredient, and therefore use the signing credential of that ingredient manifest (see xref:_validate_the_endorsements[Endorsement Validation]). The serialized `COSE_Sign1_Tagged` structure resulting from the digital signature procedure is the endorsement that may be conveyed to the signer identified in the `endorsement-target`, but the process for conveying it is out of scope of this specification.
-
-=== Endorsement storage
-
-If the active manifest signer possesses an endorsement that it wishes to use to endorse an action performed by an actor, it can choose to embed the endorsement in the manifest it is generating. The procedure for the validation of such endorsements is covered in <<_validate_the_endorsements>>. An endorsement is added as an <<_endorsement>> in the active manifest's assertion store.
+To sign an endorsement, follow the procedure specified in link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_digital_signatures++[Section 13.2, “Digital Signatures,” of the C2PA 2.0 Technical Specification], using the serialised CBOR `endorsement-target` object as the contents of the payload field. A signer SHALL NOT include a `x5chain` header and value, as endorsements are validated in the context of their use as an ingredient, and therefore use the signing credential of that ingredient manifest. (See xref:_validation[xrefstyle=full].) The serialized `COSE_Sign1_Tagged` structure resulting from the digital signature procedure is the endorsement that may be conveyed to the signer identified in the `endorsement-target`, but the process for conveying it is out of scope of this specification.
 
 == Validation
 
-NOTE: TO DO: Incorporate the following from C2PA 1.3 spec:
+Endorsement validation SHALL only be attempted if the active manifest first meets a number of conditions:
 
-> There is no requirement that signers of ingredient manifests are trusted by the validator (except in the case of xref:_validate_the_endorsements[endorsement validation]), and building of trust chains of signers of ingredients shall not be attempted. Instead, as the ingredient is included by the signer of the active manifest, and if the signer of the active manifest is accepted per the rules above, ingredient manifests will inherit that trust for the purposes of this recursive validation. Applications should not display data from ingredient manifests with failed integrity checks. If the application chooses to display such data, it must flag the display with a warning about the failed integrity check, and that the data cannot be reliably attributed to the ingredient manifest's signer nor to the asset's manifest's signer. Applications and data must not display data from ingredient manifests without first attempting validation.
+* There is exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[actions assertion] present in the assertion store
+* There is exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_ingredient++[ingredient assertion]
+
+IMPORTANT: Are more than one endorsement assertion permitted? If not, the following paragraph becomes irrelevant.
+
+Retrieve the *endorsement assertion* in the active manifest, as described in xref:_endorsement_storage[xrefstyle=full]. In order to provide resilience in the case of a claim generator unexpectedly adding multiple *endorsement assertions* to an assertion store, a validator may iterate through the validation process below with each endorsement, stopping the iteration immediately if an endorsement validates successfully.
+
+For each `action` object in the link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[actions assertion] :
+
+. Check that the `action` field is set to `c2pa.published`, `c2pa.transcoded` or `c2pa.repackaged`. If any other action is present, fail the endorsement process for this manifest and do not proceed with further validation.
+. Check the `ingredient` field that is a member of the `parameters` object for the presence of a JUMBF URI. If the JUMBF URI is not present, or cannot be resolved to the related ingredient assertion, skip endorsement for this action.
+. Follow the JUMBF URI link in the `ingredient` field to the ingredient assertion. Check that the URI link resolves to an assertion in the active manifest. If it does not, skip endorsement for this action. Check that the `relationship` field is `parentOf`. If it is not, skip endorsement for this action.
+. Check the `c2pa_manifest` field in the ingredient assertion for the presence of a hashed URI. If the hashed URI is not present, or cannot be resolved to a manifest, skip endorsement for this action.
+. Follow the JUMBF URI link in the `c2pa_manifest` field to the ingredient’s manifest. Ensure that this _ingredient_ manifest has been validated according to link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_recursively_validating_integrity_of_ingredients++[Section 15.8, “Recursively validating integrity of ingredients,” of the C2PA 2.0 Technical Specification], but do not skip the establishing of signer credential trust. If it does not validate, skip endorsement for this action.
+. Validate the endorsement as described in link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_recursively_validating_integrity_of_ingredients++[Section 15.4, “Validate the signature,” of the C2PA Technical Specification], using the credential of the ingredient manifest signer. If a signing credential is present in the endorsement’s signature’s headers, it shall not be used for validation. If validation fails, skip this action.
+. Validate the `endorsement-target` payload itself, following the steps below:
+.. Compare the `endorseeCredential` to the credential of the active manifest signer, according to the table found in xref:_endorsement_credential_types[xrefstyle=full]. If the comparison fails, skip this endorsement.
+.. If the active manifest is timestamped, then the _time-stamp_ must fall within the endorsement’s validity time range. If it does not, skip this endorsement.
+.. If the active manifest is not timestamped, then the _time of validation_ must fall within the endorsement’s validity time range. If it does not, skip this endorsement.
+.. If validation fails, skip this endorsement. If validation succeeds, mark that action as __endorsed__.
+
+When endorsement validation has completed, for each actions assertion in the active manifest where all actions are marked as __endorsed__, the actions assertion itself shall be marked as __endorsed__ in the validation results returned by the validator.
+
+include::partial$version-history.adoc[]
