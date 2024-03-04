@@ -6,7 +6,7 @@
 
 An endorsement is a way of indicating approval for specific actions made on content after it has had a link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_manifests++[C2PA Manifest] attached. (See xref:_generating_an_endorsement[xrefstyle=full].) The *endorsement assertion* is where an endorsement from the signer of an ingredient asset is stored. These endorsements are typically provided (out-of-band of this specification) by ingredient asset signers to actors those signers trust to perform the actions listed in the assertion. They are used by a validator when assessing whether the actions of the active manifest are “endorsed” or not. (See xref:_validation[xrefstyle=full].)
 
-Version 1.0 *Pre-draft 28 February 2024* · xref:_version_history[]
+Version 1.0 *Draft 04 March 2024* · xref:_version_history[]
 
 [#maintainers]
 *Maintainers:*
