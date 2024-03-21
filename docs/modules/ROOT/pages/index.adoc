@@ -56,8 +56,6 @@ Before generating an *endorsement action,* the claim generator MUST ensure that:
 
 The *endorsement assertion* MUST have a label of `cawg.endorsement` and there SHALL be at most one *endorsement assertion* per manifest. The assertion contents MUST be a `COSE_Sign1_Tagged` structure that is created as defined in xref:_cose_payload_details[xrefstyle=full].
 
-IMPORTANT: C2PA 1.4 description of endorsement assertion was unclear as to whether there could be one or more than one endorsement assertion per claim. Resolve.
-
 === Permitted actions
 
 The link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[`c2pa.actions` assertion] in a C2PA Manifest containing an *endorsement assertion* MAY contain any of the following action codes:
@@ -111,12 +109,10 @@ To sign an endorsement, follow the procedure specified in link:++https://c2pa.or
 
 Endorsement validation SHALL only be attempted if the active manifest first meets a number of conditions:
 
-* There is exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[actions assertion] present in the assertion store
-* There is exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_ingredient++[ingredient assertion]
+* There is exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[actions assertion] present in the assertion store.
+* There is exactly one link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_ingredient++[ingredient assertion].
 
-IMPORTANT: Are more than one endorsement assertion permitted? If not, the following paragraph becomes irrelevant.
-
-Retrieve the *endorsement assertion* in the active manifest, as described in xref:_endorsement_storage[xrefstyle=full]. In order to provide resilience in the case of a claim generator unexpectedly adding multiple *endorsement assertions* to an assertion store, a validator may iterate through the validation process below with each endorsement, stopping the iteration immediately if an endorsement validates successfully.
+Retrieve the *endorsement assertion* in the active manifest, as described in xref:_endorsement_storage[xrefstyle=full]. In order to provide resilience in the case of a claim generator unexpectedly adding multiple *endorsement assertions* to an assertion store, a validator MAY iterate through the validation process below with each endorsement, stopping the iteration immediately if an endorsement validates successfully.
 
 For each `action` object in the link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#_actions++[actions assertion] :
 
