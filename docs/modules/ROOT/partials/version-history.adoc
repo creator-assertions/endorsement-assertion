@@ -10,3 +10,7 @@ _This section is non-normative._
 *04 March 2024*
 
 * Promoted from pre-draft to draft status.
+
+*Pending merge*
+
+* Add restriction that there can be only one endorsement assertion per manifest.
