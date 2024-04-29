@@ -206,10 +206,15 @@ _<<_endorsement,Endorsements>>_ are COSE objects (see link:++https://c2pa.org/sp
 |
 |
 
-|X.509 SubjectPublicKeyInfo
+|Reserved _(deprecated)_
 |1
-|A https://datatracker.ietf.org/doc/html/rfc5280#section-4.1[DER-encoded ASN.1 SubjectPublicKeyInfo] structure (as a CBOR `bstr`), from the _endorsee’s_ X.509 certificate that will be used for signing the claims of _<<_c2pa_asset,C2PA assets>>_ that this _<<_endorsement,endorsement>>_ is expected to be used with.
-|The value of the credential shall be compared (bitwise identical) to the SubjectPublicKeyInfo structure of the certificate located in the `x5chain` or `33` (integer) COSE header of the active _<<C2PA Manifest>>_ claim signature. (See link:++https://c2pa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#x509_certificates++[Section 14.6, “X.509 Certificates,” of the C2PA 2.0 Technical Specification].)
+|This CBOR label was used in link:https://c2pa.org/specifications/specifications/1.4/specs/C2PA_Specification.html#_endorsement_credential_types[a prior version of the endorsement assertion specification] and should no longer be used.
+|n/a
+
+|X.509 Certificate Hash
+|2
+|A SHA-256 hash of the _endorsee’s_ X.509 certificate chain that will be used for signing the claims of _<<_c2pa_asset,C2PA assets>>_ that this _<<_endorsement,endorsement>>_ is expected to be used with.
+|The value of the credential shall be compared (bitwise identical) to a SHA-256 hash of the entire certificate chain located in the `x5chain` or `33` (integer) COSE header of the active _<<C2PA Manifest>>_ claim signature. (See link:++https://c2pfa.org/specifications/specifications/2.0/specs/C2PA_Specification.html#x509_certificates++[Section 14.6, “X.509 Certificates,” of the C2PA 2.0 Technical Specification].)
 |===
 
 _<<_endorser,Endorsers>>_ SHALL place the credential of the signer they are endorsing (the _<<_endorsee,endorsee>>_) and its type in the `endorseeCredential`. To limit the length of time that an _<<_endorser,endorser>>_ is lending their _<<_endorsement,endorsement>>_ to the _<<_endorsee,endorsee>>,_ the `notValidBefore` and `notValidAfter` fields MUST contain ISO 8601 date times.
