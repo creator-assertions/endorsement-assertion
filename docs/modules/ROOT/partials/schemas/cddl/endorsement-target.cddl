@@ -1,7 +1,7 @@
 endorsement-target-map = {
-  "endorseeCredential" : public-credential,  ; A DER-encoded SubjectPublicKeyInfo containing the public key
-  "notValidBefore": tdate, ; The date-time that this endorsement valid from, before this time it is not valid
-  "notValidAfter": tdate ; The date-time that this endorsement expires and is no longer valid
+  "endorseeCredential" : public-credential, ; a DER-encoded SubjectPublicKeyInfo containing the public key
+  "notValidBefore": tdate, ; the date-time that this endorsement valid from; before this time it is not valid
+  "notValidAfter": tdate ; the date-time that this endorsement expires and is no longer valid
   ? "metadata": $assertion-metadata-map, ; additional information about the assertion
 }
 
